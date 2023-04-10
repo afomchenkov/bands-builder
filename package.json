@@ -9,7 +9,8 @@
   "scripts": {
     "lint": "find . -path ./node_modules -prune -o -name '*.js' -print0 | xargs -0 prettier-check",
     "format": "find . -path ./node_modules -prune -o -name '*.js' -print0 | xargs -0 prettier --write",
-    "build": "npm run clean; babel src --out-dir dist --source-maps --copy-files",
+    "build": "npm run clean; babel src --out-dir dist --copy-files",
+    "build:source-maps": "npm run clean; babel src --out-dir dist --source-maps --copy-files",
     "start": "node bin/www",
     "start:dev": "npm run build && node --inspect=9230 bin/www",
     "start:watch": "npm run build && nodemon --watch src --exec npm run start:dev",
