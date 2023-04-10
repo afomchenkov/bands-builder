@@ -18,3 +18,25 @@
 * Add Auth with JWT
 * Add Cron job for notifications
 * Add Redis cache
+* Add RabbitMQ
+* Run sqlite3 in dev/test and postgres in prod
+
+
+# Docker Prometheus Grafana Monitoring
+```
+docker-compose up -d --build api
+```
+
+## Start Prometheus, Grafana & Dashboards
+
+```
+docker-compose up -d prometheus
+docker-compose up -d grafana
+docker-compose up -d grafana-dashboards
+```
+
+## Check Dashboards
+```
+http://localhost:3000
+
+```
