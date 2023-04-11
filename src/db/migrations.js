@@ -182,3 +182,20 @@ export const migrateJamRole = async (client) => {
       .inTable('role')
   });
 }
+
+export const testType = async (client) => {
+  const FOO = 'FOO';
+
+  if (await client.schema.hasTable(FOO)) {
+    throw new Error(`The table ${FOO} already exists.`);
+  }
+
+  // Example for PostgreSQL array type
+  await client.schema.createTable(FOO, (table) => {
+    table.increments('id');
+    table.specificType('intarray', 'integer ARRAY');
+    table.specificType('stringarray', 'text ARRAY');
+  });
+
+  // await knex('foo').insert({ intarray: [4, 3, 2, 1], stringarray: ['foo','bar'] });
+}
