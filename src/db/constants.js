@@ -9,9 +9,9 @@ export const TABLE = Object.freeze({
   ROLE: 'role',
   USER: 'user',
   SONG: 'song',
-  JAM: 'jam',
   USER_ROLE: 'user_role',
   SONG_ROLE: 'song_role',
-  JAM_USER: 'jam_user',
-  JAM_ROLE: 'jam_role',
+  JAM: 'jam',
+  JAM_USER: 'jam_user', // assigned users to jam
+  JAM_ROLE: 'jam_role', // filled roles/instruments in a jam
 });

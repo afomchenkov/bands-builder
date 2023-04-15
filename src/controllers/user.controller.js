@@ -6,8 +6,10 @@ const getUserById = async (userId) => {
   const dbClient = repository.getClient();
   // For PostgreSQL use ARRAY_AGG
   const user = await dbClient
-    .select('user.first_name', 'user.last_name', 'user.email', 'user.username', 'user.id',
-      dbClient.raw('GROUP_CONCAT (role.instrument) instruments'))
+    .select(
+      'user.first_name', 'user.last_name', 'user.email', 'user.username', 'user.id',
+      dbClient.raw('GROUP_CONCAT (role.instrument) instruments')
+    )
     .from(TABLE.USER)
     .innerJoin(TABLE.USER_ROLE, { 'user.id': 'user_role.user_id' })
     .innerJoin(TABLE.ROLE, { 'role.id': 'user_role.role_id' })

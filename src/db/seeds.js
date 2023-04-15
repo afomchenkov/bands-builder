@@ -13,6 +13,7 @@ export const seedUsers = async (client) => {
       email: 'john.dow@gmail.com',
       username: 'john_dow',
       password,
+      // instruments: ["drums" - 4, "guitar" - 1, "mandolin" - 11, "trumpet" - 7]
     },
     {
       first_name: 'Michael',
@@ -20,6 +21,7 @@ export const seedUsers = async (client) => {
       email: 'michael.jacksondow@gmail.com',
       username: 'michael_jackson',
       password,
+      // instruments: ["bag pipes" - 14, "guitar" - 1, "banjo" - 18, "bell" - 16, "cello" - 6]
     },
     {
       first_name: 'Max',
@@ -27,6 +29,46 @@ export const seedUsers = async (client) => {
       email: 'max.mustermann@gmail.com',
       username: 'max_mustermann',
       password,
+      // instruments: ["guitar" - 1, "piano" - 2]
+    },
+  ]);
+}
+
+// To seed a Jam, we need
+// - create Jam first, assign the song and creator
+// - assign creator role in 'jam_role'
+//   * for every next assignment, we need to add record 'jam_role' and 'jam_user'
+//   * 'jam_role' is needed to keep track of the assigned/free roles
+export const seedJams = async (client) => {
+  await client(TABLE.JAM).insert([
+    {
+      song_id: 2, // roles = [4, 1, 2, 7, 11]
+      author_id: 3,
+      started: false,
+      finished: false,
+      public: true,
+      description: 'Let\'s jam with me',
+    },
+  ]);
+
+  await client(TABLE.JAM_ROLE).insert([
+    {
+      jam_id: 2,
+      role_id: 3,
+    },
+  ]);
+
+  // assign one more user
+  await client(TABLE.JAM_USER).insert([
+    {
+      jam_id: 2,
+      user_id: 1,
+    },
+  ]);
+  await client(TABLE.JAM_ROLE).insert([
+    {
+      jam_id: 2,
+      role_id: 4,
     },
   ]);
 }

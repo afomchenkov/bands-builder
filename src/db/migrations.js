@@ -78,17 +78,16 @@ export const migrateJam = async (client) => {
       .unsigned();
     table.dateTime('created_at').notNullable().defaultTo(time);
     table.dateTime('updated_at').notNullable().defaultTo(time);
-    table.string('title').notNullable();
-    table.string('band').notNullable();
+    table.string('description').notNullable();
     table
-      .integer('song')
+      .integer('song_id')
       .unsigned()
       .index()
       .references('id')
       .inTable('song')
       .onDelete('SET NULL');
     table
-      .integer('author')
+      .integer('author_id')
       .unsigned()
       .index()
       .references('id')

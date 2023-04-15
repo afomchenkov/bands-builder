@@ -17,6 +17,7 @@ import {
   seedSongs,
   seedUserRoles,
   seedSongRoles,
+  seedJams,
 } from './seeds';
 
 const knexClient = knex({
@@ -51,6 +52,7 @@ const seed = async (client) => {
   await seedUserRoles(client);
   await seedSongs(client);
   await seedSongRoles(client);
+  await seedJams(client);
 }
 
 

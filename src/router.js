@@ -3,6 +3,7 @@ import { check, validationResult, matchedData, param } from 'express-validator';
 import { getRoles } from './controllers/role.controller';
 import { getSongs, createSong } from './controllers/song.controller';
 import { createUser, getUserById } from './controllers/user.controller';
+import { getJams } from './controllers/jam.controller';
 import { INSTRUMENT_ROLES } from './db/constants';
 
 const router = AsyncRouter();
@@ -125,10 +126,13 @@ router.post('/songs',
   }
 )
 
-// TODO:
-// A user can browse pending jams
-// get.jams
+// fetch available jams
+router.get('/jams', async (_, res) => {
+  const jams = await getJams();
+  return res.status(200).json(jams);
+});
 
+// TODO:
 // A user (host) can create a public jam based on a song
 // post.jam(validate)
 
