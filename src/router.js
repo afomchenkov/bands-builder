@@ -3,8 +3,9 @@ import { check, validationResult, matchedData, param } from 'express-validator';
 import { getRoles } from './controllers/role.controller';
 import { getSongs, createSong } from './controllers/song.controller';
 import { createUser, getUserById } from './controllers/user.controller';
-import { getJams } from './controllers/jam.controller';
+import { getJams, getJam, joinJam } from './controllers/jam.controller';
 import { INSTRUMENT_ROLES } from './db/constants';
+import { Jam } from './models/jam';
 
 const router = AsyncRouter();
 
@@ -129,15 +130,56 @@ router.post('/songs',
 // fetch available jams
 router.get('/jams', async (_, res) => {
   const jams = await getJams();
-  return res.status(200).json(jams);
+  return res.status(200).json(jams.map(jam => new Jam(jam).toDto()));
 });
+
+// fetch specific jam
+router.get('/jams/:jamId',
+  param('jamId').isInt(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    const { jamId } = req.params;
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const jam = await getJam(jamId);
+      return res.status(200).json(new Jam(jam).toDto());
+    } catch (error) {
+      return res.status(404).end();
+    }
+  }
+);
+
+// join jam
+router.put('/jams/:jamId',
+  param('jamId').isInt(),
+  check('instrument').isString(),
+  async (req, res) => {
+    const errors = validationResult(req);
+    const { jamId } = req.params;
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { body: { instrument } } = req;
+
+      // check via helper utils if user is eligible to join
+      const jam = await joinJam(jamId, instrument);
+      return res.status(200).json(jam);
+    } catch (error) {
+      return res.status(404).end();
+    }
+  }
+);
 
 // TODO:
 // A user (host) can create a public jam based on a song
 // post.jam(validate)
-
-// A user can join a publicly available jam
-// put.jam_user(to join jam)
 
 // A user (host) can start created jam when all song roles have assigned performers
 // get.jam() - check if all roles filled and it can be started

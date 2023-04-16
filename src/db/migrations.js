@@ -99,6 +99,42 @@ export const migrateJam = async (client) => {
   });
 }
 
+export const migrateAssignment = async (client) => {
+  // assignment table - jam assignment records
+  if (await client.schema.hasTable(TABLE.ASSIGNMENT)) {
+    throw new Error(`The table ${TABLE.ASSIGNMENT} already exists.`);
+  }
+
+  const time = getUnixTime(new Date);
+  await client.schema.createTable(TABLE.ASSIGNMENT, (table) => {
+    table
+      .increments('id')
+      .primary()
+      .unsigned();
+    table.dateTime('created_at').notNullable().defaultTo(time);
+    table.dateTime('updated_at').notNullable().defaultTo(time);
+    table
+      .integer('user_id')
+      .unsigned()
+      .index()
+      .references('id')
+      .inTable('user')
+      .onDelete('CASCADE') // if user is deleted, delete 'assignment' as well
+    table
+      .integer('role_id')
+      .unsigned()
+      .index()
+      .references('id')
+      .inTable('role')
+      .onDelete('SET NULL');
+    table
+      .integer('jam_id')
+      .references('id')
+      .inTable('jam')
+      .onDelete('CASCADE') // if jam is deleted, delete 'assignment' as well
+  });
+}
+
 export const migrateUserRole = async (client) => {
   // many-to-many user-role table
   if (await client.schema.hasTable(TABLE.USER_ROLE)) {
@@ -132,49 +168,7 @@ export const migrateSongRole = async (client) => {
       .references('id')
       .inTable('song')
       .onUpdate('CASCADE')
-      .onDelete('CASCADE')
-    table
-      .integer('role_id')
-      .references('id')
-      .inTable('role')
-  });
-}
-
-export const migrateJamUser = async (client) => {
-  // many-to-many jam-user table
-  if (await client.schema.hasTable(TABLE.JAM_USER)) {
-    throw new Error(`The table ${TABLE.JAM_USER} already exists.`);
-  }
-
-  await client.schema.createTable(TABLE.JAM_USER, (table) => {
-    table.increments('id').primary().unsigned();
-    table
-      .integer('jam_id')
-      .references('id')
-      .inTable('jam')
-      .onUpdate('CASCADE')
-      .onDelete('CASCADE')
-    table
-      .integer('user_id')
-      .references('id')
-      .inTable('user')
-  });
-}
-
-export const migrateJamRole = async (client) => {
-  // many-to-many jam-role table
-  if (await client.schema.hasTable(TABLE.JAM_ROLE)) {
-    throw new Error(`The table ${TABLE.JAM_ROLE} already exists.`);
-  }
-
-  await client.schema.createTable(TABLE.JAM_ROLE, (table) => {
-    table.increments('id').primary().unsigned();
-    table
-      .integer('jam_id')
-      .references('id')
-      .inTable('jam')
-      .onUpdate('CASCADE')
-      .onDelete('CASCADE')
+      .onDelete('CASCADE') // if song is deleted, delete 'song_role' as well
     table
       .integer('role_id')
       .references('id')

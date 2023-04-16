@@ -12,6 +12,5 @@ export const TABLE = Object.freeze({
   USER_ROLE: 'user_role',
   SONG_ROLE: 'song_role',
   JAM: 'jam',
-  JAM_USER: 'jam_user', // assigned users to jam
-  JAM_ROLE: 'jam_role', // filled roles/instruments in a jam
+  ASSIGNMENT: 'assignment', // assigned user/role to jam
 });

@@ -8,8 +8,7 @@ import {
   migrateJam,
   migrateUserRole,
   migrateSongRole,
-  migrateJamUser,
-  migrateJamRole,
+  migrateAssignment,
 } from './migrations';
 import {
   seedUsers,
@@ -34,8 +33,7 @@ export const migrate = async (client) => {
   // relations
   await migrateUserRole(client);
   await migrateSongRole(client);
-  await migrateJamUser(client);
-  await migrateJamRole(client);
+  await migrateAssignment(client);
 }
 
 const down = async (client) => {

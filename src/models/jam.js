@@ -8,8 +8,17 @@ export class Jam {
   }
 
   toDto() {
-    const filled_roles = this.rawData.filled_roles.split(',');
-    const available_roles = this.rawData.all_roles.filter(role => !filled_roles.includes(role))
+    const assignments = this.rawData.assignments.map(assignment => {
+      const { assignment_instrument, assignment_username } = assignment;
+
+      return {
+        instrument: assignment_instrument,
+        username: assignment_username,
+      };
+    });
+    const available_roles = this.rawData.instruments.filter(instrument => {
+      return !assignments.some(assignment => assignment.instrument === instrument);
+    });
 
     return {
       id: this.rawData.id,
@@ -17,8 +26,9 @@ export class Jam {
       description: this.rawData.description,
       started: !!this.rawData.started,
       finished: !!this.rawData.finished,
+      assignments,
       author: {
-        username: this.rawData.user_username,
+        username: this.rawData.author_username,
       },
       song: {
         title: this.rawData.song_title,
@@ -28,7 +38,6 @@ export class Jam {
         description: this.rawData.song_description,
       },
       available_roles,
-      filled_roles,
     };
   }
 }

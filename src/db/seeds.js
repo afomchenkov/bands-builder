@@ -36,14 +36,13 @@ export const seedUsers = async (client) => {
 
 // To seed a Jam, we need
 // - create Jam first, assign the song and creator
-// - assign creator role in 'jam_role'
-//   * for every next assignment, we need to add record 'jam_role' and 'jam_user'
-//   * 'jam_role' is needed to keep track of the assigned/free roles
+// - assign creator role in 'jam_assignment'
+//   * for every next assignment, we need to add record 'jam_assignment'
 export const seedJams = async (client) => {
   await client(TABLE.JAM).insert([
     {
       song_id: 2, // roles = [4, 1, 2, 7, 11]
-      author_id: 3,
+      author_id: 2,
       started: false,
       finished: false,
       public: true,
@@ -51,24 +50,20 @@ export const seedJams = async (client) => {
     },
   ]);
 
-  await client(TABLE.JAM_ROLE).insert([
+  await client(TABLE.ASSIGNMENT).insert([
     {
-      jam_id: 2,
-      role_id: 3,
+      jam_id: 1,
+      user_id: 2, // michael_jackson
+      role_id: 1, // guitar
     },
   ]);
 
   // assign one more user
-  await client(TABLE.JAM_USER).insert([
+  await client(TABLE.ASSIGNMENT).insert([
     {
-      jam_id: 2,
-      user_id: 1,
-    },
-  ]);
-  await client(TABLE.JAM_ROLE).insert([
-    {
-      jam_id: 2,
-      role_id: 4,
+      jam_id: 1,
+      user_id: 1, // john_dow
+      role_id: 4, // drums
     },
   ]);
 }
