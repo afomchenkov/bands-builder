@@ -3,7 +3,7 @@ import { check, validationResult, matchedData, param } from 'express-validator';
 import { getRoles } from './controllers/role.controller';
 import { getSongs, createSong } from './controllers/song.controller';
 import { createUser, getUserById } from './controllers/user.controller';
-import { getJams, getJam, joinJam, startJam } from './controllers/jam.controller';
+import { getJams, getJam, joinJam, createJam, startJam } from './controllers/jam.controller';
 import { INSTRUMENT_ROLES } from './db/constants';
 import { Jam } from './models/jam';
 
@@ -153,6 +153,40 @@ router.get('/jams/:jamId',
   }
 );
 
+// create jam
+router.post('/jams',
+  [
+    check('userId').isInt(),
+    check('songId').isInt(),
+    check('description').isString().optional(),
+    check('instrument')
+      .notEmpty()
+      .isString()
+      .custom(async instrument => {
+        const valid = INSTRUMENT_ROLES.includes(instrument);
+        return valid ? Promise.resolve(true) : Promise.reject();
+      }).withMessage('Unsupported instrument has been specified.'),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { body } = req;
+
+      const jam = await createJam(body);
+
+      return res.status(201).json(jam);
+    } catch (error) {
+      return res.status(404).end(error.message);
+    }
+  }
+);
+
+
 // join jam
 router.put('/jams/:jamId/join/:userId',
   [
@@ -211,10 +245,6 @@ router.put('/jams/:jamId/start',
     }
   }
 );
-
-// TODO:
-// A user (host) can create a public jam based on a song
-// post.jam(validate)
 
 // A user can be notified when jam starts
 // trigger notification send on jam start

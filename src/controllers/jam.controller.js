@@ -132,6 +132,24 @@ const getInstrumentByName = async (instrument) => {
   return role;
 }
 
+const getSong = async (songId) => {
+  const dbClient = repository.getClient();
+
+  const song = await dbClient(TABLE.SONG)
+    .select(
+      'song.*',
+      dbClient.raw('GROUP_CONCAT (role.instrument) song_instruments'),
+    )
+    .leftJoin(TABLE.SONG_ROLE, { 'song.id': 'song_role.song_id' })
+    .leftJoin(TABLE.ROLE, { 'role.id': 'song_role.role_id' })
+    .where('song.id', songId)
+    .groupBy('song.id')
+    .orderBy('song.id')
+    .first();
+
+  return song;
+}
+
 const getUser = async (userId) => {
   const dbClient = repository.getClient();
 
@@ -184,7 +202,7 @@ const joinJam = async (jamId, userId, instrument) => {
   return Promise.resolve(jam.id);
 }
 
-export const startJam = async (jamId, userId) => {
+const startJam = async (jamId, userId) => {
   const dbClient = repository.getClient();
 
   const jam = await getJam(jamId);
@@ -211,8 +229,54 @@ export const startJam = async (jamId, userId) => {
   return Promise.resolve(updated);
 }
 
+const createJam = async (payload) => {
+  const { userId, songId, instrument, description } = payload;
+  const dbClient = repository.getClient();
+
+  const user = await getUser(userId);
+
+  const userInstruments = user.instruments.split(',');
+  if (!userInstruments.includes(instrument)) {
+    throw new Error(`User does not have such role: ${instrument}`);
+  }
+
+  const song = await getSong(songId);
+  const { song_instruments } = song;
+  const instruments = song_instruments.split(',');
+
+  if (!instruments.includes(instrument)) {
+    throw new Error(`The selected song does not have such role: ${instrument}`);
+  }
+
+
+  const [jam_id] = await dbClient(TABLE.JAM).insert([
+    {
+      song_id: songId,
+      author_id: userId,
+      started: false,
+      finished: false,
+      public: true,
+      description,
+    },
+  ]);
+
+  const role = await getInstrumentByName(instrument);
+
+  await dbClient(TABLE.ASSIGNMENT).insert([
+    {
+      jam_id,
+      user_id: userId,
+      role_id: role.id,
+    },
+  ]);
+
+  return jam_id;
+}
+
 export {
   getJams,
   getJam,
+  createJam,
+  startJam,
   joinJam,
 };
