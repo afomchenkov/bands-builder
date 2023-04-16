@@ -121,8 +121,67 @@ const getJam = async (jamId) => {
   return jam;
 }
 
-const joinJam = async (jamId) => {
+const getInstrumentByName = async (instrument) => {
+  const dbClient = repository.getClient();
 
+  const role = await dbClient(TABLE.ROLE)
+    .select('*')
+    .where('role.instrument', instrument)
+    .first();
+
+  return role;
+}
+
+const getUser = async (userId) => {
+  const dbClient = repository.getClient();
+
+  const user = await dbClient
+    .select(
+      'user.id',
+      dbClient.raw('GROUP_CONCAT (role.instrument) instruments')
+    )
+    .from(TABLE.USER)
+    .innerJoin(TABLE.USER_ROLE, { 'user.id': 'user_role.user_id' })
+    .innerJoin(TABLE.ROLE, { 'role.id': 'user_role.role_id' })
+    .where('user.id', userId)
+    .groupBy('user.id')
+    .orderBy('user.id')
+    .first();
+
+  return user;
+}
+
+const joinJam = async (jamId, userId, instrument) => {
+  const dbClient = repository.getClient();
+
+  const user = await getUser(userId);
+
+  const userInstruments = user.instruments.split(',');
+  if (!userInstruments.includes(instrument)) {
+    throw new Error(`User does not have such role: ${instrument}`);
+  }
+
+  const jam = await getJam(jamId);
+  if (!jam.instruments.includes(instrument)) {
+    throw new Error(`Jam does not have such role: ${instrument}`);
+  }
+
+  const isRoleAssigned = jam.assignments.some(assignment => assignment.assignment_instrument === instrument);
+  if (isRoleAssigned) {
+    throw new Error(`Jam already have such role assigned: ${instrument}`);
+  }
+
+  const instrumentRecord = await getInstrumentByName(instrument);
+
+  await await dbClient(TABLE.ASSIGNMENT).insert([
+    {
+      jam_id: jam.id,
+      user_id: user.id,
+      role_id: instrumentRecord.id,
+    },
+  ]);
+
+  return Promise.resolve(jam.id);
 }
 
 export {

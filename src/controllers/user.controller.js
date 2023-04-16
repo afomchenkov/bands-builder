@@ -47,10 +47,6 @@ const createUser = async (payload) => {
   }
 
   return user_id;
-
-
-
-  return Promise.resolve(0);
 }
 
 export {

@@ -154,25 +154,34 @@ router.get('/jams/:jamId',
 );
 
 // join jam
-router.put('/jams/:jamId',
-  param('jamId').isInt(),
-  check('instrument').isString(),
+router.put('/jams/:jamId/join/:userId',
+  [
+    param('jamId').isInt(),
+    param('userId').isInt(),
+    check('instrument')
+      .notEmpty()
+      .isString()
+      .custom(async instrument => {
+        const valid = INSTRUMENT_ROLES.includes(instrument);
+        return valid ? Promise.resolve(true) : Promise.reject();
+      }).withMessage('Unsupported instrument has been specified.'),
+  ],
   async (req, res) => {
     const errors = validationResult(req);
-    const { jamId } = req.params;
 
     if (!errors.isEmpty()) {
       return res.status(400).json({ errors: errors.array() });
     }
 
     try {
+      const { jamId, userId } = req.params;
       const { body: { instrument } } = req;
 
-      // check via helper utils if user is eligible to join
-      const jam = await joinJam(jamId, instrument);
+      const jam = await joinJam(jamId, userId, instrument);
+
       return res.status(200).json(jam);
     } catch (error) {
-      return res.status(404).end();
+      return res.status(404).end(error.message);
     }
   }
 );

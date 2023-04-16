@@ -20,6 +20,7 @@
 * Add Redis cache
 * Add RabbitMQ
 * Run sqlite3 in dev/test and postgres in prod
+* Add Swagger docs
 
 
 # Docker Prometheus Grafana Monitoring
