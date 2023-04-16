@@ -3,7 +3,7 @@ import { check, validationResult, matchedData, param } from 'express-validator';
 import { getRoles } from './controllers/role.controller';
 import { getSongs, createSong } from './controllers/song.controller';
 import { createUser, getUserById } from './controllers/user.controller';
-import { getJams, getJam, joinJam } from './controllers/jam.controller';
+import { getJams, getJam, joinJam, startJam } from './controllers/jam.controller';
 import { INSTRUMENT_ROLES } from './db/constants';
 import { Jam } from './models/jam';
 
@@ -186,13 +186,35 @@ router.put('/jams/:jamId/join/:userId',
   }
 );
 
+// start jam when all roles assigned - only author can start it
+router.put('/jams/:jamId/start',
+  [
+    param('jamId').isInt(),
+    check('userId').isInt(),
+  ],
+  async (req, res) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+      return res.status(400).json({ errors: errors.array() });
+    }
+
+    try {
+      const { jamId } = req.params;
+      const { body: { userId } } = req;
+
+      const isStarted = await startJam(jamId, userId);
+
+      return res.status(200).json(isStarted);
+    } catch (error) {
+      return res.status(404).end(error.message);
+    }
+  }
+);
+
 // TODO:
 // A user (host) can create a public jam based on a song
 // post.jam(validate)
-
-// A user (host) can start created jam when all song roles have assigned performers
-// get.jam() - check if all roles filled and it can be started
-// put.jam - start jam if all conditions met
 
 // A user can be notified when jam starts
 // trigger notification send on jam start

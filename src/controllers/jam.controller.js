@@ -96,7 +96,7 @@ const getJam = async (jamId) => {
 
   const jamRecord = await dbClient
     .select(
-      'jam.id', 'jam.created_at', 'jam.description', 'jam.started', 'jam.finished',
+      'jam.id', 'jam.created_at', 'jam.description', 'jam.started', 'jam.finished', 'jam.author_id',
       'song.id as song_id', 'song.title as song_title', 'song.band as song_band', 'song.description as song_description', 'song.album as song_album', 'song.album_year as song_album_year',
       'author.username as author_username',
       dbClient.raw('GROUP_CONCAT (assignment.id) assignment_ids'),
@@ -182,6 +182,33 @@ const joinJam = async (jamId, userId, instrument) => {
   ]);
 
   return Promise.resolve(jam.id);
+}
+
+export const startJam = async (jamId, userId) => {
+  const dbClient = repository.getClient();
+
+  const jam = await getJam(jamId);
+  const { assignments, instruments, author_id, started } = jam;
+
+  if (author_id !== userId) {
+    throw new Error(`The user is not the author: [${userId}]. Only Jam author can start it.`);
+  }
+
+  if (started) {
+    throw new Error(`Jam has already been started.`);
+  }
+
+  if (assignments.length < instruments.length) {
+    const unassignedRoles = instruments.filter(instrument =>
+      !assignments.some(assignment => assignment.assignment_instrument === instrument));
+    throw new Error(`There are pending roles to assign for the Jam: [${unassignedRoles.join(',')}]`);
+  }
+
+  const updated = await dbClient(TABLE.JAM)
+    .update({ started: true })
+    .where('id', jamId);
+
+  return Promise.resolve(updated);
 }
 
 export {
